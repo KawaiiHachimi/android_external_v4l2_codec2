@@ -46,6 +46,7 @@ std::optional<VideoCodec> getCodecFromComponentName(const std::string& name) {
     if (name == V4L2ComponentName::kH264Encoder) return VideoCodec::H264;
     if (name == V4L2ComponentName::kVP8Encoder) return VideoCodec::VP8;
     if (name == V4L2ComponentName::kVP9Encoder) return VideoCodec::VP9;
+    if (name == V4L2ComponentName::kHEVCEncoder) return VideoCodec::HEVC;
 
     ALOGE("Unknown name: %s", name.c_str());
     return std::nullopt;
@@ -61,6 +62,9 @@ bool IsValidProfileForCodec(VideoCodec codec, C2Config::profile_t profile) {
         return ((profile >= C2Config::PROFILE_VP8_0) && (profile <= C2Config::PROFILE_VP8_3));
     case VideoCodec::VP9:
         return ((profile >= C2Config::PROFILE_VP9_0) && (profile <= C2Config::PROFILE_VP9_3));
+    case VideoCodec::HEVC:
+        return ((profile >= C2Config::PROFILE_HEVC_MAIN) &&
+                (profile <= C2Config::PROFILE_HEVC_3D_MAIN));
     default:
         return false;
     }
@@ -205,6 +209,14 @@ C2R V4L2EncodeInterface::VP9ProfileLevelSetter(
         }
     }
 
+    return C2R::Ok();
+}
+
+C2R V4L2EncodeInterface::HEVCProfileLevelSetter(
+        bool /*mayBlock*/, C2P<C2StreamProfileLevelInfo::output>& info,
+        const C2P<C2StreamPictureSizeInfo::input>& /*videoSize*/,
+        const C2P<C2StreamFrameRateInfo::output>& /*frameRate*/,
+        const C2P<C2StreamBitrateInfo::output>& /*bitrate*/) {
     return C2R::Ok();
 }
 
@@ -370,6 +382,29 @@ void V4L2EncodeInterface::Initialize(const C2String& name) {
                                                  C2Config::LEVEL_VP9_6_1,
                                                  C2Config::LEVEL_VP9_6_2})})
                         .withSetter(VP9ProfileLevelSetter, mInputVisibleSize, mFrameRate, mBitrate)
+                        .build());
+    } else if (getCodecFromComponentName(name) == VideoCodec::HEVC) {
+        outputMime = MEDIA_MIMETYPE_VIDEO_HEVC;
+        C2Config::profile_t minProfile = static_cast<C2Config::profile_t>(
+                *std::min_element(profiles.begin(), profiles.end()));
+        addParameter(
+                DefineParam(mProfileLevel, C2_PARAMKEY_PROFILE_LEVEL)
+                        .withDefault(new C2StreamProfileLevelInfo::output(0u, minProfile,
+                                                                          C2Config::LEVEL_HEVC_MAIN_5_1))
+                        .withFields(
+                                {C2F(mProfileLevel, profile).oneOf(profiles),
+                                 C2F(mProfileLevel, level)
+                                         .oneOf({C2Config::LEVEL_HEVC_MAIN_1,
+                                                 C2Config::LEVEL_HEVC_MAIN_2,
+                                                 C2Config::LEVEL_HEVC_MAIN_2_1,
+                                                 C2Config::LEVEL_HEVC_MAIN_3,
+                                                 C2Config::LEVEL_HEVC_MAIN_3_1,
+                                                 C2Config::LEVEL_HEVC_MAIN_4,
+                                                 C2Config::LEVEL_HEVC_MAIN_4_1,
+                                                 C2Config::LEVEL_HEVC_MAIN_5,
+                                                 C2Config::LEVEL_HEVC_MAIN_5_1,
+                                                 C2Config::LEVEL_HEVC_MAIN_5_2})})
+                        .withSetter(HEVCProfileLevelSetter, mInputVisibleSize, mFrameRate, mBitrate)
                         .build());
     } else {
         ALOGE("Unsupported component name: %s", name.c_str());

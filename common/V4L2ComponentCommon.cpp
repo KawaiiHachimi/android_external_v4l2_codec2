@@ -12,6 +12,7 @@
 namespace android {
 
 const std::string V4L2ComponentName::kH264Encoder = "c2.v4l2.avc.encoder";
+const std::string V4L2ComponentName::kHEVCEncoder = "c2.v4l2.hevc.encoder";
 const std::string V4L2ComponentName::kVP8Encoder = "c2.v4l2.vp8.encoder";
 const std::string V4L2ComponentName::kVP9Encoder = "c2.v4l2.vp9.encoder";
 
@@ -26,7 +27,7 @@ const std::string V4L2ComponentName::kHEVCSecureDecoder = "c2.v4l2.hevc.decoder.
 
 // static
 bool V4L2ComponentName::isValid(const char* name) {
-    return name == kH264Encoder || name == kVP8Encoder || name == kVP9Encoder ||
+    return name == kH264Encoder || name == kHEVCEncoder || name == kVP8Encoder || name == kVP9Encoder ||
            name == kH264Decoder || name == kVP8Decoder || name == kVP9Decoder ||
            name == kHEVCDecoder || name == kH264SecureDecoder || name == kVP8SecureDecoder ||
            name == kVP9SecureDecoder || name == kHEVCSecureDecoder;
@@ -36,7 +37,8 @@ bool V4L2ComponentName::isValid(const char* name) {
 bool V4L2ComponentName::isEncoder(const char* name) {
     ALOG_ASSERT(isValid(name));
 
-    return name == kH264Encoder || name == kVP8Encoder || name == kVP9Encoder;
+    return name == kH264Encoder || name == kHEVCEncoder || name == kVP8Encoder ||
+           name == kVP9Encoder;
 }
 
 }  // namespace android

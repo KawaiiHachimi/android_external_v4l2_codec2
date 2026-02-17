@@ -64,6 +64,10 @@ protected:
                                      const C2P<C2StreamPictureSizeInfo::input>& videosize,
                                      const C2P<C2StreamFrameRateInfo::output>& frameRate,
                                      const C2P<C2StreamBitrateInfo::output>& bitrate);
+    static C2R HEVCProfileLevelSetter(bool mayBlock, C2P<C2StreamProfileLevelInfo::output>& info,
+                                      const C2P<C2StreamPictureSizeInfo::input>& videosize,
+                                      const C2P<C2StreamFrameRateInfo::output>& frameRate,
+                                      const C2P<C2StreamBitrateInfo::output>& bitrate);
 
     static C2R SizeSetter(bool mayBlock, C2P<C2StreamPictureSizeInfo::input>& videoSize);
 
