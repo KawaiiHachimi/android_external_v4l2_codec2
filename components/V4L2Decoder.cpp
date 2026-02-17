@@ -175,8 +175,9 @@ bool V4L2Decoder::setupInputFormat(const uint32_t inputPixelFormat, const size_t
         return false;
     }
 
-    // Setup the input format.
-    auto format = mInputQueue->setFormat(inputPixelFormat, ui::Size(), inputBufferSize, 0);
+    // Venus requires a non-zero default resolution for session init.
+    // The actual resolution is determined from the bitstream by the stateful decoder.
+    auto format = mInputQueue->setFormat(inputPixelFormat, ui::Size(320, 240), inputBufferSize, 0);
     if (!format) {
         ALOGE("Failed to call IOCTL to set input format.");
         return false;
